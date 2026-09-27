@@ -30,7 +30,7 @@ const DEFAULT_LAYERS: Record<LayerKey, boolean> = {
   routes: true,
   emergencies: true,
   cities: true,
-  restricted: false,
+  restricted: true,
   hydrology: true,
 };
 
@@ -38,8 +38,7 @@ const DEFAULT_LAYERS: Record<LayerKey, boolean> = {
  * Map view presets — each one toggles the layer set in one click. Hand-picked
  * combinations that read as different "viewing modes":
  *   Atlas  — full basemap: drones, hospitals, stations, routes, emergencies,
- *            cities, hydrology. Restricted zones off (rarely relevant). The
- *            default rich view.
+ *            cities, hydrology, restricted border zones. The default rich view.
  *   Cockpit — minimal ops: drones, routes, emergencies, hydrology. No cities,
  *             no hospitals. Reads as "night-shift monitoring".
  *   Mono   — geography only: hospitals, cities, hydrology. No drones / routes
@@ -54,7 +53,7 @@ const MAP_PRESETS: Partial<Record<MapPreset, Partial<Record<LayerKey, boolean>>>
     routes: true,
     emergencies: true,
     cities: true,
-    restricted: false,
+    restricted: true,
     hydrology: true,
   },
   cockpit: {

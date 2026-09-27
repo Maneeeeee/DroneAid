@@ -28,20 +28,17 @@ export function Header({
     <header className="z-[1000] flex flex-col border-b border-paper-300 bg-paper-50/95 backdrop-blur-md">
       <div className="flex items-center gap-3 px-4 py-3 sm:gap-4 sm:px-6">
         <div className="flex shrink-0 items-center gap-3">
-          <LogoMark size={32} />
-          <div className="flex flex-col leading-none">
+          <LogoMark size={38} />
+          <div className="flex flex-col leading-tight">
             <span
-              className={`text-[17px] tracking-[-0.01em] ${
+              className={`text-[17px] font-bold text-ink-900 tracking-[-0.01em] ${
                 isDark ? "glow-text-primary" : ""
               }`}
             >
-              <span className="font-bold text-ink-900">DroneAid</span>{" "}
-              <span className="font-light tracking-wide text-primary-500">
-                ARMENIA
-              </span>
+              DroneAid
             </span>
-            <span className="mono mt-1 hidden text-[9px] font-medium uppercase tracking-[0.22em] text-muted sm:block">
-              Medical Drone Network · CAC/EASA Class G
+            <span className="hidden text-[11px] font-medium text-ink-600 sm:block">
+              When every minute matters
             </span>
           </div>
         </div>
