@@ -23,35 +23,19 @@
       content="Real-time coordination of medical drone deliveries across Armenia — emergency antivenom, blood, lab samples, and cold-chain supplies."
     />
     <script>
-      // Apply theme as early as possible to avoid FOUC. Order of
-      // precedence matches useTheme.ts:
-      //   1. ?theme=dark|light URL override
-      //   2. localStorage
-      //   3. prefers-color-scheme
-      //   4. light
+      // Apply theme as early as possible to avoid FOUC.
       (function () {
         try {
-          var theme;
-          try {
-            var params = new URLSearchParams(window.location.search);
-            var qp = params.get("theme");
-            if (qp === "light" || qp === "dark") theme = qp;
-          } catch (e) { /* ignore */ }
-          if (!theme) {
-            var stored = localStorage.getItem("droneaid-theme");
-            theme = (stored === "dark" || stored === "light")
-              ? stored
-              : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
-          }
+          var stored = localStorage.getItem("droneaid-theme");
+          var theme = stored === "dark" || stored === "light"
+            ? stored
+            : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
           document.documentElement.dataset.theme = theme;
-          // Sync the meta theme-color so the browser chrome matches.
-          var meta = document.querySelector('meta[name="theme-color"]');
-          if (meta) meta.setAttribute("content", theme === "dark" ? "#070b14" : "#fbfaf6");
         } catch (e) { /* ignore */ }
       })();
     </script>
-    <script type="module" crossorigin src="/MEDAIR/assets/index-Dlg0-ssf.js"></script>
-    <link rel="stylesheet" crossorigin href="/MEDAIR/assets/index-BDngHFll.css">
+    <script type="module" crossorigin src="/MEDAIR/assets/index-C8QoqpsL.js"></script>
+    <link rel="stylesheet" crossorigin href="/MEDAIR/assets/index-BlA5ALaA.css">
   </head>
   <body class="bg-paper-50 text-ink-900">
     <div id="root"></div>
