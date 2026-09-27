@@ -522,9 +522,16 @@ export function MapView(props: MapViewProps) {
                 status: d.status,
                 battery: d.battery,
                 id: d.id,
+                selected: d.id === selectedDroneId,
               })}
               eventHandlers={{ click: () => onPickDrone(d.id) }}
-              zIndexOffset={d.status === "in-flight" ? 500 : 100}
+              zIndexOffset={
+                d.id === selectedDroneId
+                  ? 900
+                  : d.status === "in-flight"
+                  ? 500
+                  : 100
+              }
             >
               <Tooltip
                 direction="top"

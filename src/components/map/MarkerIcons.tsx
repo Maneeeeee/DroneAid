@@ -98,8 +98,9 @@ export const droneIcon = (opts: {
   battery: number;
   id: string;
   size?: number;
+  selected?: boolean;
 }) => {
-  const { heading, status, battery, id, size = 38 } = opts;
+  const { heading, status, battery, id, size = 36, selected = false } = opts;
   const color = DRONE_STATUS_COLOR[status];
   const haloColor = color;
   const bc = batteryColor(battery);
@@ -109,28 +110,82 @@ export const droneIcon = (opts: {
     <div class="drone-marker-inner" tabindex="0" role="button"
          aria-label="Drone ${id}, ${status}, battery ${Math.round(battery)}%"
          style="${FOCUSABLE_WRAPPER_STYLES}position:relative;width:${size}px;height:${size + 18}px;${FOCUS_RING}">
+      <!-- Rotating drone graphic aligned with flight heading -->
       <div style="position:absolute;left:0;top:0;width:${size}px;height:${size}px;transform:rotate(${heading}deg);">
         ${
-          isFlying
-            ? `<div style="position:absolute;inset:-4px;border-radius:50%;border:2px solid ${color};opacity:0.55;animation:pulseRing 2s cubic-bezier(0.4,0,0.6,1) infinite;"></div>`
+          selected
+            ? `<div style="position:absolute;inset:-6px;border-radius:50%;border:2px dashed ${color};animation:pulseRing 1.5s ease-out infinite;opacity:0.9;"></div>`
             : ""
         }
-        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 0 4px ${haloColor});">
-          <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <!-- Aviation triangle, pointing up (north = 0°) — rotated by parent -->
-            <path d="M12 1.5 L18.4 21.5 L12 17.5 L5.6 21.5 Z"
-                  fill="${color}" fill-opacity="0.18"
-                  stroke="${color}" stroke-width="1.5"
+        ${
+          isFlying
+            ? `<div style="position:absolute;inset:-4px;border-radius:50%;border:1.5px solid ${color};opacity:0.45;animation:pulseRing 2s cubic-bezier(0.4,0,0.6,1) infinite;"></div>`
+            : ""
+        }
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 0 5px ${haloColor});">
+          <svg width="${size}" height="${size}" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+            <!-- 4 Diagonal Arms connecting fuselage to motor mounts -->
+            <line x1="14" y1="14" x2="6.5" y2="6.5" stroke="${color}" stroke-width="1.8" stroke-linecap="round" opacity="0.85" />
+            <line x1="14" y1="14" x2="21.5" y2="6.5" stroke="${color}" stroke-width="1.8" stroke-linecap="round" opacity="0.85" />
+            <line x1="14" y1="14" x2="6.5" y2="21.5" stroke="${color}" stroke-width="1.8" stroke-linecap="round" opacity="0.85" />
+            <line x1="14" y1="14" x2="21.5" y2="21.5" stroke="${color}" stroke-width="1.8" stroke-linecap="round" opacity="0.85" />
+
+            <!-- 4 Rotor Guard Rings -->
+            <circle cx="6.5" cy="6.5" r="4.2" stroke="${color}" stroke-width="1.2" fill="${color}" fill-opacity="0.14" />
+            <circle cx="21.5" cy="6.5" r="4.2" stroke="${color}" stroke-width="1.2" fill="${color}" fill-opacity="0.14" />
+            <circle cx="6.5" cy="21.5" r="4.2" stroke="${color}" stroke-width="1.2" fill="${color}" fill-opacity="0.14" />
+            <circle cx="21.5" cy="21.5" r="4.2" stroke="${color}" stroke-width="1.2" fill="${color}" fill-opacity="0.14" />
+
+            <!-- Propeller Blades (animated spinning in-flight, static when stationary) -->
+            ${
+              isFlying
+                ? `
+              <line x1="3" y1="6.5" x2="10" y2="6.5" stroke="${color}" stroke-width="1.3" stroke-linecap="round">
+                <animateTransform attributeName="transform" type="rotate" from="0 6.5 6.5" to="360 6.5 6.5" dur="0.22s" repeatCount="indefinite" />
+              </line>
+              <line x1="18" y1="6.5" x2="25" y2="6.5" stroke="${color}" stroke-width="1.3" stroke-linecap="round">
+                <animateTransform attributeName="transform" type="rotate" from="360 21.5 6.5" to="0 21.5 6.5" dur="0.22s" repeatCount="indefinite" />
+              </line>
+              <line x1="3" y1="21.5" x2="10" y2="21.5" stroke="${color}" stroke-width="1.3" stroke-linecap="round">
+                <animateTransform attributeName="transform" type="rotate" from="360 6.5 21.5" to="0 6.5 21.5" dur="0.22s" repeatCount="indefinite" />
+              </line>
+              <line x1="18" y1="21.5" x2="25" y2="21.5" stroke="${color}" stroke-width="1.3" stroke-linecap="round">
+                <animateTransform attributeName="transform" type="rotate" from="0 21.5 21.5" to="360 21.5 21.5" dur="0.22s" repeatCount="indefinite" />
+              </line>
+            `
+                : `
+              <line x1="3.5" y1="6.5" x2="9.5" y2="6.5" stroke="${color}" stroke-width="1.3" stroke-linecap="round" />
+              <line x1="18.5" y1="6.5" x2="24.5" y2="6.5" stroke="${color}" stroke-width="1.3" stroke-linecap="round" />
+              <line x1="3.5" y1="21.5" x2="9.5" y2="21.5" stroke="${color}" stroke-width="1.3" stroke-linecap="round" />
+              <line x1="18.5" y1="21.5" x2="24.5" y2="21.5" stroke="${color}" stroke-width="1.3" stroke-linecap="round" />
+            `
+            }
+
+            <!-- Motor Hubs -->
+            <circle cx="6.5" cy="6.5" r="1.3" fill="${color}" />
+            <circle cx="21.5" cy="6.5" r="1.3" fill="${color}" />
+            <circle cx="6.5" cy="21.5" r="1.3" fill="${color}" />
+            <circle cx="21.5" cy="21.5" r="1.3" fill="${color}" />
+
+            <!-- Central Fuselage / Cargo Pod -->
+            <path d="M14 5 C16 5 17.5 8 17.5 12.5 C17.5 17 16 20 14 20.5 C12 20 10.5 17 10.5 12.5 C10.5 8 12 5 14 5 Z"
+                  fill="rgb(var(--bg-panel) / 0.95)"
+                  stroke="${color}" stroke-width="1.4"
                   stroke-linejoin="round" />
-            <!-- Battery chevron (status indicator on the body) -->
-            <path d="M10.4 14 L12 16.6 L13.6 14"
-                  stroke="${bc}" stroke-width="1.6"
-                  stroke-linecap="round" stroke-linejoin="round" fill="none" />
+
+            <!-- Directional Heading Nose Indicator (Forward arrow tip pointing North) -->
+            <polygon points="14,2 16.2,5.5 11.8,5.5" fill="${color}" />
+
+            <!-- Medical Cross on Fuselage -->
+            <path d="M14 9.5 v4 M12 11.5 h4" stroke="${color}" stroke-width="1.3" stroke-linecap="round" />
+
+            <!-- Battery Status Bar on Fuselage Tail -->
+            <rect x="12" y="16" width="4" height="2.2" rx="0.6" fill="${bc}" stroke="${color}" stroke-width="0.5" />
           </svg>
         </div>
       </div>
       <!-- ID label — stays horizontal regardless of heading -->
-      <div style="position:absolute;left:50%;top:${size - 2}px;transform:translate(-50%, 0);
+      <div style="position:absolute;left:50%;top:${size}px;transform:translate(-50%, 0);
                   font-family:'JetBrains Mono',ui-monospace,monospace;
                   font-size:9.5px;font-weight:700;
                   letter-spacing:0.04em;
