@@ -68,8 +68,13 @@ export function FilterPanel({
             onChange={(e) => onQueryChange(e.target.value)}
             placeholder="City, hospital, drone, item…"
             aria-label="Search cities, hospitals, drones, or items"
-            className="w-full rounded-lg border border-paper-300 bg-paper-50 py-2.5 pl-10 pr-3.5 text-[13px] text-ink-900 placeholder:text-ink-500 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+            className="w-full rounded-lg border border-paper-300 bg-paper-50 py-2.5 pl-10 pr-16 text-[13px] text-ink-900 placeholder:text-ink-500 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
           />
+          {!query && (
+            <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 rounded border border-paper-300 bg-paper-100 px-1.5 py-0.5 mono text-[10px] text-ink-600">
+              Ctrl/⌘K
+            </span>
+          )}
         </div>
         {recent.length > 0 && (
           <div className="flex flex-wrap gap-1.5">

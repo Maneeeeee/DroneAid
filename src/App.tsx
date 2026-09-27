@@ -690,12 +690,16 @@ function DefaultSidePanel({
 
       <div className="panel animate-slideUp p-5">
         <div className="label-eyebrow">Tip</div>
-        <div className="mt-2.5 text-[13px] text-ink-700">
+        <div className="mt-2.5 text-[13px] leading-relaxed text-ink-700">
           Click a hospital or drone on the map to see details. Use{" "}
-          <kbd className="rounded border border-paper-300 bg-paper-100 px-1.5 py-0.5 mono text-[11px] text-ink-800">
-            ⌘K
+          <kbd className="rounded border border-paper-300 bg-paper-100 px-1.5 py-0.5 mono text-[11px] font-semibold text-ink-800">
+            Ctrl+K
           </kbd>{" "}
-          to focus the search.
+          <span className="text-ink-500">(Windows)</span> or{" "}
+          <kbd className="rounded border border-paper-300 bg-paper-100 px-1.5 py-0.5 mono text-[11px] font-semibold text-ink-800">
+            ⌘K / Cmd+K
+          </kbd>{" "}
+          <span className="text-ink-500">(Mac)</span> to focus the search.
         </div>
       </div>
 
