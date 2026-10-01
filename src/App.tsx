@@ -19,9 +19,9 @@ import { initialEmergencies } from "./data/emergencies";
 import { restrictedZones } from "./data/restricted";
 import { useDroneSimulation } from "./hooks/useDroneSimulation";
 import { initialDrones } from "./data/drones";
-import type { LayerKey, QuickFilterKey } from "./types";
+import type { Drone, LayerKey, QuickFilterKey } from "./types";
 import { AlertTriangle, X } from "lucide-react";
-import { haversineKm } from "./lib/utils";
+import { haversineKm, bearingDeg } from "./lib/utils";
 
 const DEFAULT_LAYERS: Record<LayerKey, boolean> = {
   drones: true,
@@ -117,7 +117,7 @@ const ITEM_ALIASES: Record<string, string[]> = {
 };
 
 export default function App() {
-  const { drones, kpis } = useDroneSimulation(initialDrones);
+  const { drones, kpis, dispatchDrone, recallDrone } = useDroneSimulation(initialDrones);
   const toast = useToast();
   const { theme, toggleTheme } = useTheme();
   const [layers, setLayers] = useState(DEFAULT_LAYERS);
@@ -192,7 +192,8 @@ export default function App() {
   };
 
   const onRecallDrone = (id: string) => {
-    toast.show(`Recall command sent to ${id}. Pilot acknowledged.`, {
+    recallDrone(id);
+    toast.show(`Recall command sent to ${id}. Returning to base.`, {
       variant: "success",
     });
   };
@@ -631,12 +632,55 @@ export default function App() {
           cityById={cityById}
           onClose={() => setDispatchOpen(false)}
           onDispatched={(payload) => {
+            const st = droneStations.find((s) => s.id === payload.stationId);
+            const hosp = hospitals.find((h) => h.id === payload.hospitalId);
+            const originCity = st ? st.cityId : "yerevan";
+            const destCity = hosp ? hosp.cityId : "jermuk";
+
+            const oCoords = cityById(originCity);
+            const tCoords = cityById(destCity);
+            const heading = Math.round(bearingDeg(oCoords, tCoords));
+            const distKm = payload.distanceKm || Math.max(5, Math.round(haversineKm(oCoords, tCoords) * 10) / 10);
+
+            const newDrone: Drone = {
+              id: payload.droneId,
+              status: "in-flight",
+              homeStationId: payload.stationId,
+              originCityId: originCity,
+              destinationCityId: destCity,
+              progress: 0.02,
+              speed: 105,
+              altitude: 580,
+              heading,
+              battery: 100,
+              cargo: payload.items.map((it, idx) => ({
+                id: it.id || `c-${idx}`,
+                label: it.name,
+                category: (it.id.includes("antivenom")
+                  ? "anti-poison"
+                  : it.id.includes("blood")
+                  ? "blood"
+                  : it.id.includes("vaccine")
+                  ? "vaccine"
+                  : "medication") as any,
+                quantity: it.quantity,
+                unit: it.unit,
+              })),
+              etaMin: payload.etaMin || payload.durationMin || Math.max(1, Math.round((distKm / 105) * 60)),
+              totalDistanceKm: distKm,
+              distanceTraveledKm: 0.2,
+              signal: "strong",
+              updatedAt: new Date().toISOString(),
+            };
+
+            dispatchDrone(newDrone);
+            onPickDrone(newDrone.id);
+            setDispatchOpen(false);
+
             toast.show(
-              `Emergency dispatch launched: ${payload.droneId} → ${payload.destinationName} (${payload.etaMin} min ETA)`,
+              `Emergency dispatch launched: ${newDrone.id} (${cityById(originCity).name} → ${cityById(destCity).name} · ${newDrone.etaMin}m ETA)`,
               { variant: "success", duration: 6000 }
             );
-            onPickHospital(payload.hospitalId);
-            setDispatchOpen(false);
           }}
         />
       )}

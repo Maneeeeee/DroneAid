@@ -103,8 +103,8 @@ export function DispatchWizard({
   const batteryCostPct = Math.min(100, Math.round(durationMin * 0.18 + 4));
 
   const droneId = useMemo(() => {
-    const stamp = (Date.now() % 1000).toString().padStart(3, "0");
-    return `DR-${stamp}`;
+    const num = Math.floor(10 + Math.random() * 90);
+    return `AR-0${num}`;
   }, []);
 
   const presetForUrgency = (u: "critical" | "high" | "normal") => {

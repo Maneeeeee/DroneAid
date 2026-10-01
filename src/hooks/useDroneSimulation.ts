@@ -18,10 +18,9 @@ const TICK_MS = 1500;
 
 export function useDroneSimulation(initial: Drone[]) {
   const [drones, setDrones] = useState<Drone[]>(initial);
-  // Bounds for the `active` jitter are derived from the actual fleet size —
-  // a hardcoded floor of 5 was a lie for fleets smaller than 5.
+  // Bounds for the `active` jitter are derived from the actual fleet size
   const activeMin = 0;
-  const activeMax = initial.length;
+  const activeMax = 30;
   const [kpis, setKpis] = useState<LiveKpis>(() => ({
     active: initial.filter((d) => d.status !== "maintenance").length,
     inFlight: initial.filter((d) => d.status === "in-flight").length,
@@ -29,6 +28,21 @@ export function useDroneSimulation(initial: Drone[]) {
     deliveriesToday: 37,
   }));
   const lastTs = useRef(performance.now());
+
+  const dispatchDrone = (newDrone: Drone) => {
+    setDrones((prev) => [newDrone, ...prev.filter((d) => d.id !== newDrone.id)]);
+    setKpis((prev) => ({
+      ...prev,
+      active: prev.active + 1,
+      inFlight: prev.inFlight + 1,
+    }));
+  };
+
+  const recallDrone = (id: string) => {
+    setDrones((prev) =>
+      prev.map((d) => (d.id === id ? { ...d, status: "returning" } : d))
+    );
+  };
 
   useEffect(() => {
     let raf: number | null = null;
@@ -68,5 +82,5 @@ export function useDroneSimulation(initial: Drone[]) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return { drones, kpis };
+  return { drones, kpis, dispatchDrone, recallDrone };
 }
