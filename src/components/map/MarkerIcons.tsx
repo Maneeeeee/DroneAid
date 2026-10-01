@@ -100,7 +100,7 @@ export const droneIcon = (opts: {
   size?: number;
   selected?: boolean;
 }) => {
-  const { heading, status, battery, id, size = 36, selected = false } = opts;
+  const { heading, status, battery, id, size = 30, selected = false } = opts;
   const color = DRONE_STATUS_COLOR[status];
   const haloColor = color;
   const bc = batteryColor(battery);
@@ -109,20 +109,20 @@ export const droneIcon = (opts: {
   const html = `
     <div class="drone-marker-inner" tabindex="0" role="button"
          aria-label="Drone ${id}, ${status}, battery ${Math.round(battery)}%"
-         style="${FOCUSABLE_WRAPPER_STYLES}position:relative;width:${size}px;height:${size + 18}px;${FOCUS_RING}">
+         style="${FOCUSABLE_WRAPPER_STYLES}position:relative;width:${size}px;height:${size + 15}px;${FOCUS_RING}">
       <!-- Rotating drone graphic aligned with flight heading -->
       <div style="position:absolute;left:0;top:0;width:${size}px;height:${size}px;transform:rotate(${heading}deg);">
         ${
           selected
-            ? `<div style="position:absolute;inset:-6px;border-radius:50%;border:2px dashed ${color};animation:pulseRing 1.5s ease-out infinite;opacity:0.9;"></div>`
+            ? `<div style="position:absolute;inset:-5px;border-radius:50%;border:2px dashed ${color};animation:pulseRing 1.5s ease-out infinite;opacity:0.9;"></div>`
             : ""
         }
         ${
           isFlying
-            ? `<div style="position:absolute;inset:-4px;border-radius:50%;border:1.5px solid ${color};opacity:0.45;animation:pulseRing 2s cubic-bezier(0.4,0,0.6,1) infinite;"></div>`
+            ? `<div style="position:absolute;inset:-3px;border-radius:50%;border:1.5px solid ${color};opacity:0.45;animation:pulseRing 2s cubic-bezier(0.4,0,0.6,1) infinite;"></div>`
             : ""
         }
-        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 0 5px ${haloColor});">
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 0 4px ${haloColor});">
           <svg width="${size}" height="${size}" viewBox="0 0 28 28" fill="none" aria-hidden="true">
             <!-- 4 Diagonal Arms connecting fuselage to motor mounts -->
             <line x1="14" y1="14" x2="6.5" y2="6.5" stroke="${color}" stroke-width="1.8" stroke-linecap="round" opacity="0.85" />
@@ -187,9 +187,9 @@ export const droneIcon = (opts: {
       <!-- ID label — stays horizontal regardless of heading -->
       <div style="position:absolute;left:50%;top:${size}px;transform:translate(-50%, 0);
                   font-family:'JetBrains Mono',ui-monospace,monospace;
-                  font-size:9.5px;font-weight:700;
-                  letter-spacing:0.04em;
-                  padding:1.5px 4px;
+                  font-size:8.5px;font-weight:700;
+                  letter-spacing:0.03em;
+                  padding:1px 3.5px;
                   border-radius:3px;
                   background:${PALETTE.aviationBg};
                   color:${PALETTE.aviationLabelFg};
@@ -203,7 +203,7 @@ export const droneIcon = (opts: {
   return L.divIcon({
     html,
     className: "drone-marker",
-    iconSize: [size, size + 18],
+    iconSize: [size, size + 15],
     iconAnchor: [size / 2, size / 2],
   });
 };
