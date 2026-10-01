@@ -40,6 +40,14 @@ export interface CatalogItem {
   defaultQty: number;
 }
 
+export interface ManifestItem {
+  id: string;
+  name: string;
+  quantity: number;
+  unit: string;
+  selected?: boolean;
+}
+
 const MEDICAL_CATALOG: CatalogItem[] = [
   // Antivenom & Toxins
   { id: "antivenom-lyo", name: "Lyophilised Polyvalent Antivenom", category: "antivenom", defaultUnit: "vials", defaultQty: 4 },
@@ -89,20 +97,20 @@ const URGENCY_VARIANT = {
   },
 } as const;
 
-const CRITICAL_PRESET = [
-  { id: "antivenom-lyo", name: "Lyophilised Polyvalent Antivenom", quantity: 4, unit: "vials" },
-  { id: "epinephrine", name: "Epinephrine (Adrenaline) 1mg", quantity: 6, unit: "ampoules" },
-  { id: "iv-fluids", name: "IV Crystalloids (0.9% NaCl)", quantity: 2, unit: "litres" },
+const CRITICAL_PRESET: ManifestItem[] = [
+  { id: "antivenom-lyo", name: "Lyophilised Polyvalent Antivenom", quantity: 4, unit: "vials", selected: true },
+  { id: "epinephrine", name: "Epinephrine (Adrenaline) 1mg", quantity: 6, unit: "ampoules", selected: true },
+  { id: "iv-fluids", name: "IV Crystalloids (0.9% NaCl)", quantity: 2, unit: "litres", selected: true },
 ];
 
-const HIGH_PRESET = [
-  { id: "blood-op", name: "Blood Type O+", quantity: 2, unit: "units" },
-  { id: "oxytocin", name: "Oxytocin (Postpartum Hemorrhage)", quantity: 6, unit: "ampoules" },
+const HIGH_PRESET: ManifestItem[] = [
+  { id: "blood-op", name: "Blood Type O+", quantity: 2, unit: "units", selected: true },
+  { id: "oxytocin", name: "Oxytocin (Postpartum Hemorrhage)", quantity: 6, unit: "ampoules", selected: true },
 ];
 
-const NORMAL_PRESET = [
-  { id: "vaccine-mmr", name: "MMR Vaccine", quantity: 10, unit: "doses" },
-  { id: "antibiotics", name: "Broad-spectrum Antibiotics (Ceftriaxone)", quantity: 10, unit: "vials" },
+const NORMAL_PRESET: ManifestItem[] = [
+  { id: "vaccine-mmr", name: "MMR Vaccine", quantity: 10, unit: "doses", selected: true },
+  { id: "antibiotics", name: "Broad-spectrum Antibiotics (Ceftriaxone)", quantity: 10, unit: "vials", selected: true },
 ];
 
 const COMMON_UNITS = [
@@ -137,7 +145,7 @@ export function DispatchWizard({
   const [stationId, setStationId] = useState<string>(stations[0]?.id ?? "");
   const [hospitalId, setHospitalId] = useState<string>(hospitals[0]?.id ?? "");
   const [urgency, setUrgency] = useState<"critical" | "high" | "normal">("critical");
-  const [items, setItems] = useState<{ id: string; name: string; quantity: number; unit: string }[]>(CRITICAL_PRESET);
+  const [items, setItems] = useState<ManifestItem[]>(CRITICAL_PRESET);
 
   // Category filter for quick-add catalog
   const [catalogCategory, setCatalogCategory] = useState<string>("all");
@@ -173,18 +181,34 @@ export function DispatchWizard({
 
   const presetForUrgency = (u: "critical" | "high" | "normal") => {
     setUrgency(u);
-    if (u === "critical") setItems(CRITICAL_PRESET);
-    else if (u === "high") setItems(HIGH_PRESET);
-    else setItems(NORMAL_PRESET);
+    if (u === "critical") setItems(CRITICAL_PRESET.map((it) => ({ ...it })));
+    else if (u === "high") setItems(HIGH_PRESET.map((it) => ({ ...it })));
+    else setItems(NORMAL_PRESET.map((it) => ({ ...it })));
+  };
+
+  // Toggle checkbox on item
+  const handleToggleItem = (idx: number, isChecked: boolean) => {
+    setItems((prev) =>
+      prev.map((it, i) => (i === idx ? { ...it, selected: isChecked } : it))
+    );
+  };
+
+  // Toggle all items
+  const handleToggleAll = (isChecked: boolean) => {
+    setItems((prev) => prev.map((it) => ({ ...it, selected: isChecked })));
   };
 
   // Add catalog item to manifest
   const handleAddCatalogItem = (catItem: CatalogItem) => {
     setItems((prev) => {
-      const existing = prev.find((it) => it.id === catItem.id || it.name.toLowerCase() === catItem.name.toLowerCase());
+      const existing = prev.find(
+        (it) => it.id === catItem.id || it.name.toLowerCase() === catItem.name.toLowerCase()
+      );
       if (existing) {
         return prev.map((it) =>
-          it === existing ? { ...it, quantity: it.quantity + catItem.defaultQty } : it
+          it === existing
+            ? { ...it, quantity: it.quantity + catItem.defaultQty, selected: true }
+            : it
         );
       }
       return [
@@ -194,6 +218,7 @@ export function DispatchWizard({
           name: catItem.name,
           quantity: catItem.defaultQty,
           unit: catItem.defaultUnit,
+          selected: true,
         },
       ];
     });
@@ -212,10 +237,10 @@ export function DispatchWizard({
       const existing = prev.find((it) => it.name.toLowerCase() === cleanName.toLowerCase());
       if (existing) {
         return prev.map((it) =>
-          it === existing ? { ...it, quantity: it.quantity + qty } : it
+          it === existing ? { ...it, quantity: it.quantity + qty, selected: true } : it
         );
       }
-      return [...prev, { id: itemId, name: cleanName, quantity: qty, unit }];
+      return [...prev, { id: itemId, name: cleanName, quantity: qty, unit, selected: true }];
     });
 
     setCustomName("");
@@ -243,25 +268,35 @@ export function DispatchWizard({
     return MEDICAL_CATALOG.filter((it) => it.category === catalogCategory);
   }, [catalogCategory]);
 
-  const totalPayloadUnits = useMemo(() => {
-    return items.reduce((sum, it) => sum + it.quantity, 0);
+  // Only checked items with quantity > 0 are delivered
+  const selectedItems = useMemo(() => {
+    return items.filter((it) => it.selected !== false && it.quantity > 0);
   }, [items]);
+
+  const totalPayloadUnits = useMemo(() => {
+    return selectedItems.reduce((sum, it) => sum + it.quantity, 0);
+  }, [selectedItems]);
 
   const canAdvance = () => {
     if (step === 1) return !!station;
-    if (step === 2) return !!hospital && !!urgency;
-    return items.length > 0 && items.some((it) => it.quantity > 0);
+    if (step === 2) return !!hospital && !!urgency && selectedItems.length > 0;
+    return selectedItems.length > 0;
   };
 
   const handleLaunch = () => {
-    if (!station || !hospital || items.length === 0) return;
+    if (!station || !hospital || selectedItems.length === 0) return;
     onDispatched({
       stationId: station.id,
       stationName: station.name,
       hospitalId: hospital.id,
       destinationName: hospital.name,
       urgency,
-      items: items.map((it) => ({ ...it })),
+      items: selectedItems.map((it) => ({
+        id: it.id,
+        name: it.name,
+        quantity: it.quantity,
+        unit: it.unit,
+      })),
       distanceKm,
       durationMin,
       batteryCostPct,
@@ -299,7 +334,7 @@ export function DispatchWizard({
                 New emergency dispatch
               </h2>
               <div className="mt-1 text-[12px] text-ink-600">
-                Coordinate a live drone flight to any medical facility with custom cargo.
+                Select exactly which items to deliver with checkboxes, and customize amounts freely.
               </div>
             </div>
           </div>
@@ -395,7 +430,7 @@ export function DispatchWizard({
               <div>
                 <h3 className="label-eyebrow mb-2">Step 2 · Destination & urgency</h3>
                 <p className="text-[13px] text-ink-700">
-                  Select the receiving medical facility and dispatch priority.
+                  Select the receiving medical facility, dispatch priority, and check the items to deliver.
                 </p>
               </div>
 
@@ -420,9 +455,70 @@ export function DispatchWizard({
                 </div>
               </div>
 
+              {/* Items selection checkboxes directly in Step 2 */}
+              <div className="rounded-lg border border-paper-300 bg-paper-50 p-3.5">
+                <div className="flex items-center justify-between pb-2 border-b border-paper-200">
+                  <span className="label-eyebrow text-ink-800">
+                    Choose items to deliver ({selectedItems.length} of {items.length} selected)
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleToggleAll(true)}
+                      className="text-[11px] font-medium text-primary-700 hover:underline"
+                    >
+                      Select all
+                    </button>
+                    <span className="text-ink-400">·</span>
+                    <button
+                      type="button"
+                      onClick={() => handleToggleAll(false)}
+                      className="text-[11px] text-ink-600 hover:underline"
+                    >
+                      Deselect all
+                    </button>
+                  </div>
+                </div>
+
+                <div className="mt-2 space-y-1.5">
+                  {items.map((it, idx) => {
+                    const isChecked = it.selected !== false;
+                    return (
+                      <label
+                        key={`${it.id}-${idx}`}
+                        className={`flex items-center justify-between gap-2.5 rounded-md border p-2.5 text-[13px] cursor-pointer transition-colors ${
+                          isChecked
+                            ? "border-primary-500/50 bg-primary-500/[0.06]"
+                            : "border-paper-300 bg-paper-100/50 opacity-60"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={(e) => handleToggleItem(idx, e.target.checked)}
+                            className="h-4 w-4 rounded border-paper-300 text-primary-600 focus:ring-primary-500/20 cursor-pointer accent-primary-600"
+                          />
+                          <span
+                            className={`font-medium truncate ${
+                              isChecked ? "text-ink-900" : "text-ink-500 line-through"
+                            }`}
+                          >
+                            {it.name}
+                          </span>
+                        </div>
+                        <span className="mono text-[12px] font-semibold text-primary-700 shrink-0">
+                          {it.quantity} {it.unit}
+                        </span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+
               <div>
                 <label className="label-eyebrow block">Receiving facility</label>
-                <div className="mt-1.5 grid max-h-[280px] grid-cols-1 gap-1.5 overflow-y-auto pr-1">
+                <div className="mt-1.5 grid max-h-[220px] grid-cols-1 gap-1.5 overflow-y-auto pr-1">
                   {hospitals.map((h) => {
                     const c = cityById(h.cityId);
                     const selected = h.id === hospitalId;
@@ -430,7 +526,7 @@ export function DispatchWizard({
                       <button
                         key={h.id}
                         onClick={() => setHospitalId(h.id)}
-                        className={`flex items-center justify-between rounded-lg border px-3.5 py-2.5 text-left outline-none transition-colors focus-visible:ring-2 focus-visible:ring-primary-500/40 ${
+                        className={`flex items-center justify-between rounded-lg border px-3.5 py-2 text-left outline-none transition-colors focus-visible:ring-2 focus-visible:ring-primary-500/40 ${
                           selected
                             ? "border-primary-500/50 bg-primary-500/[0.08]"
                             : "border-paper-300 bg-paper-50 hover:border-primary-300 hover:bg-paper-100"
@@ -460,7 +556,7 @@ export function DispatchWizard({
               <div>
                 <h3 className="label-eyebrow mb-1">Step 3 · Cargo Manifest & Flight Envelope</h3>
                 <p className="text-[13px] text-ink-700">
-                  Select and customize any medical items, staff supplies, blood, or antivenom in any amount.
+                  Toggle items with checkboxes, adjust exact quantities, or add new custom supplies.
                 </p>
               </div>
 
@@ -509,86 +605,128 @@ export function DispatchWizard({
                 </div>
               </div>
 
-              {/* Current Cargo Manifest Section */}
+              {/* Current Cargo Manifest Section with Checkboxes */}
               <div className="rounded-lg border border-paper-300 bg-paper-50 p-4">
                 <div className="flex items-center justify-between pb-2 border-b border-paper-200">
                   <div className="flex items-center gap-2">
                     <Package size={15} className="text-primary-600" />
                     <span className="font-semibold text-[13px] text-ink-900">
-                      Active Cargo Manifest ({items.length} item{items.length === 1 ? "" : "s"} · {totalPayloadUnits} total units)
+                      Active Cargo Manifest ({selectedItems.length} of {items.length} items checked · {totalPayloadUnits} units)
                     </span>
                   </div>
-                  {items.length > 0 && (
+                  <div className="flex items-center gap-2">
                     <button
                       type="button"
-                      onClick={() => setItems([])}
-                      className="text-[11px] text-critical-600 hover:underline"
+                      onClick={() => handleToggleAll(true)}
+                      className="text-[11px] font-medium text-primary-700 hover:underline"
                     >
-                      Clear all
+                      Check all
                     </button>
-                  )}
+                    <span className="text-ink-400">·</span>
+                    <button
+                      type="button"
+                      onClick={() => handleToggleAll(false)}
+                      className="text-[11px] text-ink-600 hover:underline"
+                    >
+                      Uncheck all
+                    </button>
+                    {items.length > 0 && (
+                      <>
+                        <span className="text-ink-400">·</span>
+                        <button
+                          type="button"
+                          onClick={() => setItems([])}
+                          className="text-[11px] text-critical-600 hover:underline"
+                        >
+                          Clear
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
 
-                {/* List of items in manifest */}
+                {/* List of items in manifest with checkboxes */}
                 {items.length === 0 ? (
                   <div className="py-5 text-center text-[12px] text-ink-600">
                     Manifest is empty. Pick items from the catalog or add custom supplies below.
                   </div>
                 ) : (
                   <div className="mt-3 space-y-2 max-h-[190px] overflow-y-auto pr-1">
-                    {items.map((it, idx) => (
-                      <div
-                        key={`${it.id}-${idx}`}
-                        className="flex items-center justify-between gap-2 rounded-lg border border-paper-300 bg-paper-100/70 p-2 text-[13px]"
-                      >
-                        <div className="flex flex-col flex-1 min-w-0">
-                          <span className="font-medium text-ink-900 truncate">
-                            {it.name}
-                          </span>
-                          <span className="text-[11px] text-ink-600">
-                            Unit: {it.unit}
-                          </span>
-                        </div>
+                    {items.map((it, idx) => {
+                      const isChecked = it.selected !== false;
+                      return (
+                        <div
+                          key={`${it.id}-${idx}`}
+                          className={`flex items-center justify-between gap-2 rounded-lg border p-2 text-[13px] transition-colors ${
+                            isChecked
+                              ? "border-paper-300 bg-paper-100/80"
+                              : "border-paper-200 bg-paper-100/40 opacity-55"
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              onChange={(e) => handleToggleItem(idx, e.target.checked)}
+                              className="h-4 w-4 rounded border-paper-300 text-primary-600 focus:ring-primary-500/20 cursor-pointer accent-primary-600 shrink-0"
+                              aria-label={`Select ${it.name}`}
+                            />
+                            <div className="flex flex-col min-w-0 flex-1">
+                              <span
+                                className={`font-medium truncate ${
+                                  isChecked ? "text-ink-900" : "text-ink-500 line-through"
+                                }`}
+                              >
+                                {it.name}
+                              </span>
+                              <span className="text-[11px] text-ink-600">
+                                {it.unit}
+                              </span>
+                            </div>
+                          </div>
 
-                        {/* Quantity Increment/Decrement Controls */}
-                        <div className="flex items-center gap-1.5 shrink-0">
-                          <button
-                            type="button"
-                            onClick={() => handleUpdateQty(idx, it.quantity - 1)}
-                            className="flex h-6 w-6 items-center justify-center rounded border border-paper-300 bg-paper-50 text-ink-700 hover:bg-paper-200"
-                            aria-label="Decrease quantity"
-                          >
-                            <Minus size={12} />
-                          </button>
-                          <input
-                            type="number"
-                            min="1"
-                            value={it.quantity}
-                            onChange={(e) => handleUpdateQty(idx, parseInt(e.target.value, 10) || 1)}
-                            className="mono w-14 rounded border border-paper-300 bg-paper-50 px-1.5 py-0.5 text-center text-[12px] font-semibold text-primary-700 focus:border-primary-400 focus:outline-none"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => handleUpdateQty(idx, it.quantity + 1)}
-                            className="flex h-6 w-6 items-center justify-center rounded border border-paper-300 bg-paper-50 text-ink-700 hover:bg-paper-200"
-                            aria-label="Increase quantity"
-                          >
-                            <Plus size={12} />
-                          </button>
-                          <span className="mono text-[11px] text-ink-600 min-w-[32px]">
-                            {it.unit}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveItem(idx)}
-                            className="ml-1 flex h-6 w-6 items-center justify-center rounded text-critical-500 hover:bg-critical-500/10 hover:text-critical-600"
-                            aria-label="Remove item"
-                          >
-                            <Trash2 size={13} />
-                          </button>
+                          {/* Quantity Increment/Decrement Controls */}
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateQty(idx, it.quantity - 1)}
+                              className="flex h-6 w-6 items-center justify-center rounded border border-paper-300 bg-paper-50 text-ink-700 hover:bg-paper-200"
+                              aria-label="Decrease quantity"
+                            >
+                              <Minus size={12} />
+                            </button>
+                            <input
+                              type="number"
+                              min="1"
+                              value={it.quantity}
+                              onChange={(e) =>
+                                handleUpdateQty(idx, parseInt(e.target.value, 10) || 1)
+                              }
+                              className="mono w-14 rounded border border-paper-300 bg-paper-50 px-1.5 py-0.5 text-center text-[12px] font-semibold text-primary-700 focus:border-primary-400 focus:outline-none"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateQty(idx, it.quantity + 1)}
+                              className="flex h-6 w-6 items-center justify-center rounded border border-paper-300 bg-paper-50 text-ink-700 hover:bg-paper-200"
+                              aria-label="Increase quantity"
+                            >
+                              <Plus size={12} />
+                            </button>
+                            <span className="mono text-[11px] text-ink-600 min-w-[32px]">
+                              {it.unit}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveItem(idx)}
+                              className="ml-1 flex h-6 w-6 items-center justify-center rounded text-critical-500 hover:bg-critical-500/10 hover:text-critical-600"
+                              aria-label="Remove item"
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -732,7 +870,7 @@ export function DispatchWizard({
               disabled={!canAdvance()}
               onClick={handleLaunch}
             >
-              <PlaneTakeoff size={12} /> Launch dispatch ({items.length} item{items.length === 1 ? "" : "s"})
+              <PlaneTakeoff size={12} /> Launch dispatch ({selectedItems.length} item{selectedItems.length === 1 ? "" : "s"})
             </Button>
           )}
         </div>
