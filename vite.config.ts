@@ -8,5 +8,5 @@ import { defineConfig } from 'vite'
 // (`DroneAid`) — so that the existing deployment URL keeps working.
 export default defineConfig({
   plugins: [react()],
-  base: '/MEDAIR/',
+  base: './',
 })
