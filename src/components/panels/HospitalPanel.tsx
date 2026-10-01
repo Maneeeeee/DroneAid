@@ -3,7 +3,7 @@ import { cityById } from "../../data/cities";
 import { StatusPill } from "../ui/StatusPill";
 import { StatTile } from "../ui/StatTile";
 import { Button } from "../ui/Button";
-import { Activity, Clock, Plane, Phone, X } from "lucide-react";
+import { Activity, Clock, Plane, X, PlaneTakeoff } from "lucide-react";
 import { HospitalGlyph } from "../ui/Icons";
 import { relativeTime } from "../../lib/utils";
 
@@ -20,10 +20,12 @@ const STATUS_STYLES: Record<
 export function HospitalPanel({
   hospital,
   onClose,
+  onRequestDelivery,
   filteredMatch,
 }: {
   hospital: Hospital;
   onClose: () => void;
+  onRequestDelivery?: (hospitalId: string) => void;
   filteredMatch?: boolean;
 }) {
   const city = cityById(hospital.cityId);
@@ -201,8 +203,12 @@ export function HospitalPanel({
         <Button variant="secondary" onClick={onClose}>
           Close
         </Button>
-        <Button variant="primary" className="flex-1">
-          <Phone size={13} /> Request delivery
+        <Button
+          variant="primary"
+          className="flex-1"
+          onClick={() => onRequestDelivery?.(hospital.id)}
+        >
+          <PlaneTakeoff size={13} /> Request delivery
         </Button>
       </div>
     </div>

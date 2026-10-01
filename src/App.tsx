@@ -148,6 +148,7 @@ export default function App() {
   const [selectedEmergencyId, setSelectedEmergencyId] = useState<string | null>(null);
   const [contactOpen, setContactOpen] = useState(false);
   const [dispatchOpen, setDispatchOpen] = useState(false);
+  const [dispatchInitialHospitalId, setDispatchInitialHospitalId] = useState<string | undefined>(undefined);
   const [presentationOpen, setPresentationOpen] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -372,7 +373,10 @@ export default function App() {
         theme={theme}
         onToggleTheme={toggleTheme}
         onOpenContact={() => setContactOpen(true)}
-        onOpenDispatch={() => setDispatchOpen(true)}
+        onOpenDispatch={() => {
+          setDispatchInitialHospitalId(undefined);
+          setDispatchOpen(true);
+        }}
         onOpenPresentation={() => setPresentationOpen(true)}
         onToggleFilters={() => setFiltersOpen((v) => !v)}
       />
@@ -597,6 +601,10 @@ export default function App() {
             <HospitalPanel
               hospital={selectedHospital}
               onClose={() => setSelectedHospitalId(null)}
+              onRequestDelivery={(hospId) => {
+                setDispatchInitialHospitalId(hospId);
+                setDispatchOpen(true);
+              }}
               filteredMatch={
                 quickFilters["critical-inventory"] &&
                 filteredHospitalIds.has(selectedHospital.id)
@@ -606,7 +614,10 @@ export default function App() {
           {!selectedDrone && !selectedEmergency && !selectedHospital && (
             <DefaultSidePanel
               onOpenContact={() => setContactOpen(true)}
-              onOpenDispatch={() => setDispatchOpen(true)}
+              onOpenDispatch={() => {
+                setDispatchInitialHospitalId(undefined);
+                setDispatchOpen(true);
+              }}
               activeCount={activeEmergencyCount}
             />
           )}
@@ -630,7 +641,11 @@ export default function App() {
           stations={droneStations}
           hospitals={hospitals}
           cityById={cityById}
-          onClose={() => setDispatchOpen(false)}
+          initialHospitalId={dispatchInitialHospitalId}
+          onClose={() => {
+            setDispatchOpen(false);
+            setDispatchInitialHospitalId(undefined);
+          }}
           onDispatched={(payload) => {
             const st = droneStations.find((s) => s.id === payload.stationId);
             const hosp = hospitals.find((h) => h.id === payload.hospitalId);

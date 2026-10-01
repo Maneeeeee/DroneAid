@@ -130,6 +130,7 @@ interface DispatchWizardProps {
   stations: DroneStation[];
   hospitals: Hospital[];
   cityById: (id: string) => City;
+  initialHospitalId?: string;
   onClose: () => void;
   onDispatched: (payload: DispatchPayload) => void;
 }
@@ -138,12 +139,17 @@ export function DispatchWizard({
   stations,
   hospitals,
   cityById,
+  initialHospitalId,
   onClose,
   onDispatched,
 }: DispatchWizardProps) {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [stationId, setStationId] = useState<string>(stations[0]?.id ?? "");
-  const [hospitalId, setHospitalId] = useState<string>(hospitals[0]?.id ?? "");
+  const [hospitalId, setHospitalId] = useState<string>(
+    initialHospitalId && hospitals.some((h) => h.id === initialHospitalId)
+      ? initialHospitalId
+      : (hospitals[0]?.id ?? "")
+  );
   const [urgency, setUrgency] = useState<"critical" | "high" | "normal">("critical");
   const [items, setItems] = useState<ManifestItem[]>(CRITICAL_PRESET);
 
