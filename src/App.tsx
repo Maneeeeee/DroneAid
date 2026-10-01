@@ -142,7 +142,7 @@ export default function App() {
     // Manual toggle moves us out of any preset
     setPreset((cur) => (cur === "custom" ? cur : "custom"));
   };
-  const [selectedHospitalId, setSelectedHospitalId] = useState<string | null>("h-yerevan-mc");
+  const [selectedHospitalId, setSelectedHospitalId] = useState<string | null>(null);
   const [selectedDroneId, setSelectedDroneId] = useState<string | null>(null);
   const [selectedCityId, setSelectedCityId] = useState<string | null>(null);
   const [selectedEmergencyId, setSelectedEmergencyId] = useState<string | null>(null);
@@ -624,14 +624,16 @@ export default function App() {
         </aside>
 
         {/* Mobile bottom sheet */}
-        <div className="absolute inset-x-0 bottom-0 z-[1100] block md:hidden">
-          <MobileSheet
-            drones={drones}
-            hospital={selectedHospital}
-            onPickDrone={onPickDrone}
-            onClose={() => setSelectedHospitalId(null)}
-          />
-        </div>
+        {selectedHospital && (
+          <div className="absolute inset-x-0 bottom-0 z-[1100] block md:hidden">
+            <MobileSheet
+              drones={drones}
+              hospital={selectedHospital}
+              onPickDrone={onPickDrone}
+              onClose={() => setSelectedHospitalId(null)}
+            />
+          </div>
+        )}
       </div>
 
       {contactOpen && <ContactModal onClose={() => setContactOpen(false)} />}
