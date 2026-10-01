@@ -30,15 +30,15 @@ Error generating stack: `+e.message+`
   &:focus-visible, &:focus {
     box-shadow: 0 0 0 3px rgb(var(--primary) / 0.55);
   }
-`,_r=e=>{let{heading:t,status:n,battery:r,id:i,size:a=36,selected:o=!1}=e,s=pr[n],c=s,l=mr(r),u=n===`in-flight`||n===`returning`,d=`
+`,_r=e=>{let{heading:t,status:n,battery:r,id:i,size:a=30,selected:o=!1}=e,s=pr[n],c=s,l=mr(r),u=n===`in-flight`||n===`returning`,d=`
     <div class="drone-marker-inner" tabindex="0" role="button"
          aria-label="Drone ${i}, ${n}, battery ${Math.round(r)}%"
-         style="${hr}position:relative;width:${a}px;height:${a+18}px;${gr}">
+         style="${hr}position:relative;width:${a}px;height:${a+15}px;${gr}">
       <!-- Rotating drone graphic aligned with flight heading -->
       <div style="position:absolute;left:0;top:0;width:${a}px;height:${a}px;transform:rotate(${t}deg);">
-        ${o?`<div style="position:absolute;inset:-6px;border-radius:50%;border:2px dashed ${s};animation:pulseRing 1.5s ease-out infinite;opacity:0.9;"></div>`:``}
-        ${u?`<div style="position:absolute;inset:-4px;border-radius:50%;border:1.5px solid ${s};opacity:0.45;animation:pulseRing 2s cubic-bezier(0.4,0,0.6,1) infinite;"></div>`:``}
-        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 0 5px ${c});">
+        ${o?`<div style="position:absolute;inset:-5px;border-radius:50%;border:2px dashed ${s};animation:pulseRing 1.5s ease-out infinite;opacity:0.9;"></div>`:``}
+        ${u?`<div style="position:absolute;inset:-3px;border-radius:50%;border:1.5px solid ${s};opacity:0.45;animation:pulseRing 2s cubic-bezier(0.4,0,0.6,1) infinite;"></div>`:``}
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 0 4px ${c});">
           <svg width="${a}" height="${a}" viewBox="0 0 28 28" fill="none" aria-hidden="true">
             <!-- 4 Diagonal Arms connecting fuselage to motor mounts -->
             <line x1="14" y1="14" x2="6.5" y2="6.5" stroke="${s}" stroke-width="1.8" stroke-linecap="round" opacity="0.85" />
@@ -99,9 +99,9 @@ Error generating stack: `+e.message+`
       <!-- ID label — stays horizontal regardless of heading -->
       <div style="position:absolute;left:50%;top:${a}px;transform:translate(-50%, 0);
                   font-family:'JetBrains Mono',ui-monospace,monospace;
-                  font-size:9.5px;font-weight:700;
-                  letter-spacing:0.04em;
-                  padding:1.5px 4px;
+                  font-size:8.5px;font-weight:700;
+                  letter-spacing:0.03em;
+                  padding:1px 3.5px;
                   border-radius:3px;
                   background:${G.aviationBg};
                   color:${G.aviationLabelFg};
@@ -111,7 +111,7 @@ Error generating stack: `+e.message+`
         ${i}
       </div>
     </div>
-  `;return rr.default.divIcon({html:d,className:`drone-marker`,iconSize:[a,a+18],iconAnchor:[a/2,a/2]})},vr=(e=26)=>rr.default.divIcon({html:`
+  `;return rr.default.divIcon({html:d,className:`drone-marker`,iconSize:[a,a+15],iconAnchor:[a/2,a/2]})},vr=(e=26)=>rr.default.divIcon({html:`
       <div tabindex="0" role="button" aria-label="Hospital"
            style="${hr}position:relative;width:${e}px;height:${e}px;display:flex;align-items:center;justify-content:center;${gr}">
         <div style="position:absolute;inset:-3px;border-radius:50%;border:1.5px solid ${G.primaryAlpha65};opacity:0.85;animation:pulseRing 2.6s cubic-bezier(0.4,0,0.6,1) infinite;"></div>
