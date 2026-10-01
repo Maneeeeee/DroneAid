@@ -1,6 +1,5 @@
 import type { EmergencyRequest, Hospital, Drone } from "../../types";
 import { StatusPill } from "../ui/StatusPill";
-import { Button } from "../ui/Button";
 import { X, Activity, AlertTriangle, Radio, MapPin } from "lucide-react";
 import { cityById } from "../../data/cities";
 import { relativeTime } from "../../lib/utils";
@@ -148,14 +147,6 @@ export function EmergencyPanel({
             <span className="font-medium text-ink-800">{emergency.requestedBy}</span>
           </div>
         )}
-      </div>
-
-      <div className="flex flex-wrap items-center gap-2 border-t border-paper-300 p-4">
-        <Button variant="secondary">Acknowledge</Button>
-        <Button variant="secondary">Reassign</Button>
-        <Button variant="primary" className="ml-auto">
-          View full log
-        </Button>
       </div>
     </div>
   );
